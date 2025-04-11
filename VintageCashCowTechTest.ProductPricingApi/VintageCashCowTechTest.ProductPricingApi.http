@@ -1,0 +1,6 @@
+@VintageCashCowTechTest.ProductPricingApi_HostAddress = http://localhost:5042
+
+GET {{VintageCashCowTechTest.ProductPricingApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
