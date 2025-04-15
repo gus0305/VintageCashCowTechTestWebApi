@@ -1,7 +1,9 @@
 ﻿using VintageCashCowTechTest.Domain.Repositories;
+using VintageCashCowTechTest.ProductPricingApi.Calculators;
 using VintageCashCowTechTest.ProductPricingApi.Exceptions;
 using VintageCashCowTechTest.ProductPricingApi.Mappers;
 using VintageCashCowTechTest.ProductPricingApi.Models;
+using VintageCashCowTechTest.ProductPricingApi.Validation;
 
 namespace VintageCashCowTechTest.ProductPricingApi.Services
 {
@@ -10,12 +12,24 @@ namespace VintageCashCowTechTest.ProductPricingApi.Services
         private readonly IProductRepository _productRepository;
         private readonly IProductResponseMapper _productResponseMapper;
         private readonly IProductPriceHistoryMapper _productPriceHistoryMapper;
+        private readonly IUpdatePriceRequestValidator _updatePriceRequestValidator;
+        private readonly IDiscountRequestValidator _discountRequestValidator;
+        private readonly IDiscountedPriceCalculator _discountedPriceCalculator;
 
-        public ProductService(IProductRepository productRepository, IProductResponseMapper productResponseMapper, IProductPriceHistoryMapper productPriceHistoryMapper)
+        public ProductService(
+            IProductRepository productRepository, 
+            IProductResponseMapper productResponseMapper, 
+            IProductPriceHistoryMapper productPriceHistoryMapper,
+            IUpdatePriceRequestValidator updatePriceRequestValidator,
+            IDiscountRequestValidator discountRequestValidator,
+            IDiscountedPriceCalculator discountedPriceCalculator)
         {                    
             _productRepository = productRepository;
             _productResponseMapper = productResponseMapper;
             _productPriceHistoryMapper = productPriceHistoryMapper;
+            _updatePriceRequestValidator = updatePriceRequestValidator;
+            _discountRequestValidator = discountRequestValidator;
+            _discountedPriceCalculator = discountedPriceCalculator;
         }
 
         public async Task<List<ProductResponse>> GetProductsAsync()
@@ -28,11 +42,6 @@ namespace VintageCashCowTechTest.ProductPricingApi.Services
         private EntityNotFoundException CreateProductNotFoundException(int productId)
         {
             return new EntityNotFoundException("Product", productId.ToString());
-        }
-
-        private ValidationException CreateValidationException(string message)
-        {
-            return new ValidationException(message);
         }
 
         public async Task<ProductPriceHistoryResponse> GetProductPriceHistoryAsync(int productId)
@@ -54,20 +63,18 @@ namespace VintageCashCowTechTest.ProductPricingApi.Services
                 throw CreateProductNotFoundException(productId);
             }
 
-            const int minDiscountPercentage = 0;
-            const int maxDiscountPercentage = 100;
-            if (request.DiscountPercentage < minDiscountPercentage || request.DiscountPercentage > maxDiscountPercentage)
-            {
-                throw CreateValidationException($"Discount percentage must be between {minDiscountPercentage} and {maxDiscountPercentage}.");
-            }
+            _discountRequestValidator.Validate(request);
 
             var originalPrice = product.Price;
-            var discountedPrice = originalPrice * (1 - (request.DiscountPercentage / 100));
+            var discountedPrice = _discountedPriceCalculator.Calculate(request.DiscountPercentage, originalPrice);
 
             // Update product
             product.Price = discountedPrice;
             product.LastUpdated = DateTime.UtcNow;
             product.PriceHistory.Add(new Domain.Entities.PriceHistory { Price = discountedPrice, Date = DateTime.UtcNow });
+
+            // Persist product
+            _productRepository.Save(product);   
 
             return new DiscountResponse
             {
@@ -86,17 +93,15 @@ namespace VintageCashCowTechTest.ProductPricingApi.Services
                 throw CreateProductNotFoundException(productId);
             }
 
-            if (request.NewPrice < 0)
-            {
-                throw CreateValidationException("New price cannot be negative.");
-            }
-            // TODO No Max Value??
+            _updatePriceRequestValidator.Validate(request);
 
             // TODO Is the price update always performed even if the current price is the same as the new price?
-
             product.Price = request.NewPrice;
             product.LastUpdated = DateTime.UtcNow;
             product.PriceHistory.Add(new Domain.Entities.PriceHistory { Price = request.NewPrice, Date = DateTime.UtcNow });
+
+            // Persist product
+            _productRepository.Save(product);
 
             return new UpdatePriceResponse
             {

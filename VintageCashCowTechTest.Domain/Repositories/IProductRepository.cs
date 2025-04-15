@@ -6,5 +6,6 @@ namespace VintageCashCowTechTest.Domain.Repositories
     {
         public List<Product> GetAll();
         public Product? GetById(int id);
+        public void Save(Product product);
     }
 }

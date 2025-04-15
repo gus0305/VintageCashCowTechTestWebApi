@@ -7,18 +7,10 @@ namespace VintageCashCowTechTest.ProductPricingApi.Mappers
     {
         public List<ProductResponse> Map(List<Product> products)
         {
-            if (products == null)
-            {
-                return new List<ProductResponse>();
-            }
-
             var productResponses = new List<ProductResponse>();
             foreach (var product in products)
             {
-                if (product != null)
-                {
-                    productResponses.Add(Map(product));
-                }
+                productResponses.Add(Map(product));
             }
 
             return productResponses;

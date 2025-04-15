@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using VintageCashCowTechTest.ProductPricingApi.Exceptions;
 using VintageCashCowTechTest.ProductPricingApi.Models;
 using VintageCashCowTechTest.ProductPricingApi.Services;
 
@@ -10,10 +9,12 @@ namespace VintageCashCowTechTest.ProductPricingApi.Controllers
     public class ProductsController : ControllerBase
     {
         private readonly IProductService _productService;
+        private readonly ExceptionHandler _exceptionHandler;
 
-        public ProductsController(IProductService productService)
+        public ProductsController(IProductService productService, ExceptionHandler exceptionHandler)
         {
             _productService = productService;
+            _exceptionHandler = exceptionHandler;
         }
 
         [HttpGet]
@@ -31,9 +32,9 @@ namespace VintageCashCowTechTest.ProductPricingApi.Controllers
                 var priceHistory = await _productService.GetProductPriceHistoryAsync(id);
                 return Ok(priceHistory);
             }
-            catch (EntityNotFoundException ex)
+            catch (Exception ex)
             {
-                return NotFound(ex.Message);
+                return _exceptionHandler.Handle(ex);
             }
         }
 
@@ -45,13 +46,9 @@ namespace VintageCashCowTechTest.ProductPricingApi.Controllers
                 var response = await _productService.ApplyDiscountAsync(id, request);
                 return Ok(response);
             }
-            catch (EntityNotFoundException ex)
+            catch (Exception ex)
             {
-                return NotFound(ex.Message);
-            }
-            catch (ValidationException ex)
-            {
-                return BadRequest(ex.Message);
+                return _exceptionHandler.Handle(ex);
             }
         }
 
@@ -63,13 +60,9 @@ namespace VintageCashCowTechTest.ProductPricingApi.Controllers
                 var response = await _productService.UpdatePriceAsync(id, request);
                 return Ok(response);
             }
-            catch (EntityNotFoundException ex)
+            catch (Exception ex)
             {
-                return NotFound(ex.Message);
-            }
-            catch (ValidationException ex)
-            {
-                return BadRequest(ex.Message);
+                return _exceptionHandler.Handle(ex);
             }
         }
     }

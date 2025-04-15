@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http.Json;
 using VintageCashCowTechTest.Domain.Repositories;
 using Microsoft.AspNetCore.TestHost;
+using Azure;
 
 namespace VintageCashCowTechTest.ProductPricingApi.Tests.Integration
 {
@@ -29,6 +30,42 @@ namespace VintageCashCowTechTest.ProductPricingApi.Tests.Integration
             _client = _factory.CreateClient();
         }
 
+        private async Task<string> GetContentString(HttpResponseMessage httpResponseMessage)
+        {
+            return await httpResponseMessage.Content.ReadAsStringAsync();
+        }
+
+        private void AssertResponseContainsApiRequestId(HttpResponseMessage httpResponseMessage)
+        {
+            var headerExists = httpResponseMessage.Headers.TryGetValues("x-vcc-productapi-requestid", out IEnumerable<string>? headerValues);
+            Assert.IsTrue(headerExists, "responseHeader exists");
+
+            Assert.IsNotNull(headerValues, "headerValues");
+            Assert.AreEqual(1, headerValues.Count(), "headerValues.Count");
+            Assert.IsTrue(Guid.TryParse(headerValues.ElementAt(0), out Guid result), "RequestId Guid");
+        }
+
+        private async Task AssertResponseIsInternalServerError(HttpResponseMessage httpResponseMessage)
+        {
+            Assert.AreEqual(HttpStatusCode.InternalServerError, httpResponseMessage.StatusCode);
+            var message = await GetContentString(httpResponseMessage);
+            Assert.IsTrue(message.Contains("An error occurred while processing your request."));
+        }
+
+        private async Task AssertResponseIsBadRequest(HttpResponseMessage httpResponseMessage, string expectedError)
+        {
+            Assert.AreEqual(HttpStatusCode.BadRequest, httpResponseMessage.StatusCode);
+            var message = await GetContentString(httpResponseMessage);
+            Assert.AreEqual(expectedError, message);
+        }
+
+        private async Task AssertResponseIsNotFound(HttpResponseMessage httpResponseMessage, string expectedError)
+        {
+            Assert.AreEqual(HttpStatusCode.NotFound, httpResponseMessage.StatusCode);
+            var message = await GetContentString(httpResponseMessage);
+            Assert.AreEqual(expectedError, message);
+        }
+
         [TestMethod]
         public async Task GetProducts_ReturnsListOfProducts()
         {
@@ -38,7 +75,8 @@ namespace VintageCashCowTechTest.ProductPricingApi.Tests.Integration
             var response = await _client.GetAsync(BaseResource);
 
             // Assert
-            response.EnsureSuccessStatusCode();
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, "StatusCode");
+
             var content = await response.Content.ReadAsStringAsync();
             var products = JsonConvert.DeserializeObject<List<ProductResponse>>(content);
 
@@ -56,7 +94,9 @@ namespace VintageCashCowTechTest.ProductPricingApi.Tests.Integration
             Assert.AreEqual(22, secondProduct.Id);
             Assert.AreEqual("Product B22", secondProduct.Name);
             Assert.AreEqual(200.00m, secondProduct.Price);
-            Assert.AreEqual(DateTime.Parse("2024-09-25T10:12:34"), firstProduct.LastUpdated);
+            Assert.AreEqual(DateTime.Parse("2024-09-25T10:12:34"), secondProduct.LastUpdated);
+
+            AssertResponseContainsApiRequestId(response);
         }
 
         [TestMethod]
@@ -69,7 +109,8 @@ namespace VintageCashCowTechTest.ProductPricingApi.Tests.Integration
             var response = await _client.GetAsync($"{BaseResource}/{productId}");
 
             // Assert
-            response.EnsureSuccessStatusCode();
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, "StatusCode");
+
             var content = await response.Content.ReadAsStringAsync();
             var priceHistoryResponse = JsonConvert.DeserializeObject<ProductPriceHistoryResponse>(content);
 
@@ -84,11 +125,8 @@ namespace VintageCashCowTechTest.ProductPricingApi.Tests.Integration
             var lastPriceHistory = priceHistoryResponse.PriceHistory[2];
             Assert.AreEqual(lastPriceHistory.Price, 100.0m);
             Assert.AreEqual(lastPriceHistory.Date, DateTime.Parse("2024-08-10"));
-        }
 
-        private async Task<string> GetContentString(HttpResponseMessage httpResponseMessage)
-        {
-            return await httpResponseMessage.Content.ReadAsStringAsync();
+            AssertResponseContainsApiRequestId(response);
         }
 
         [TestMethod]
@@ -101,9 +139,22 @@ namespace VintageCashCowTechTest.ProductPricingApi.Tests.Integration
             var response = await _client.GetAsync($"{BaseResource}/{productId}");
 
             // Assert
-            Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
-            var message = await GetContentString(response);
-            Assert.AreEqual("Product: 999 not found", message);
+            await AssertResponseIsNotFound(response, "Product: 999 not found");
+            AssertResponseContainsApiRequestId(response);
+        }
+
+        [TestMethod]
+        public async Task GetProductPriceHistory_WhenExceptionThrown_ReturnsInternalServerError()
+        {
+            // Arrange
+            const int productId = TestProductRepository.ProductIdToThrowException;
+
+            // Act
+            var response = await _client.GetAsync($"{BaseResource}/{productId}");
+
+            // Assert
+            await AssertResponseIsInternalServerError(response);
+            AssertResponseContainsApiRequestId(response);
         }
 
         private string CreateApplyDiscountResourceUri(int productId)
@@ -122,7 +173,8 @@ namespace VintageCashCowTechTest.ProductPricingApi.Tests.Integration
             var response = await _client.PostAsJsonAsync(CreateApplyDiscountResourceUri(productId), discountRequest);
 
             // Assert
-            response.EnsureSuccessStatusCode();
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, "StatusCode");
+
             var content = await response.Content.ReadAsStringAsync();
             var discountResponse = JsonConvert.DeserializeObject<DiscountResponse>(content);
 
@@ -131,6 +183,8 @@ namespace VintageCashCowTechTest.ProductPricingApi.Tests.Integration
             Assert.AreEqual("Product A11", discountResponse.Name);
             Assert.AreEqual(100.0m, discountResponse.OriginalPrice);
             Assert.AreEqual(90.0m, discountResponse.DiscountedPrice);
+
+            AssertResponseContainsApiRequestId(response);
         }
 
         [TestMethod]
@@ -144,41 +198,38 @@ namespace VintageCashCowTechTest.ProductPricingApi.Tests.Integration
             var response = await _client.PostAsJsonAsync(CreateApplyDiscountResourceUri(productId), discountRequest);
 
             // Assert
-            Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
-            var message = await GetContentString(response);
-            Assert.AreEqual("Product: 999 not found", message);
+            await AssertResponseIsNotFound(response, "Product: 999 not found");
+            AssertResponseContainsApiRequestId(response);
         }
 
         [TestMethod]
-        public async Task ApplyDiscount_WhenDiscountLessThanMinimum_ReturnsBadRequest()
+        public async Task ApplyDiscount_WhenRequestInvalid_ReturnsBadRequest()
         {
             // Arrange
             var productId = 11;
-            var discountRequest = new DiscountRequest { DiscountPercentage = -0.01m };
+            var discountRequest = new DiscountRequest { DiscountPercentage = -1 };
 
             // Act
             var response = await _client.PostAsJsonAsync(CreateApplyDiscountResourceUri(productId), discountRequest);
 
             // Assert
-            Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
-            var message = await GetContentString(response);
-            Assert.AreEqual("Discount percentage must be between 0 and 100.", message);
+            await AssertResponseIsBadRequest(response, "Discount percentage must be between 0 and 100.");
+            AssertResponseContainsApiRequestId(response);
         }
 
         [TestMethod]
-        public async Task ApplyDiscount_WhenDiscountGreaterThanMaximum_ReturnsBadRequest()
+        public async Task ApplyDiscount_WhenExceptionThrown_ReturnsInternalServerError()
         {
             // Arrange
-            var productId = 11;
-            var discountRequest = new DiscountRequest { DiscountPercentage = 100.01m };
+            var productId = TestProductRepository.ProductIdToThrowException;
+            var discountRequest = new DiscountRequest { DiscountPercentage = 1 };
 
             // Act
             var response = await _client.PostAsJsonAsync(CreateApplyDiscountResourceUri(productId), discountRequest);
 
             // Assert
-            Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
-            var message = await GetContentString(response);
-            Assert.AreEqual("Discount percentage must be between 0 and 100.", message);
+            await AssertResponseIsInternalServerError(response);
+            AssertResponseContainsApiRequestId(response);
         }
 
         private string CreateUpdatePriceResourceUri(int productId)
@@ -197,38 +248,22 @@ namespace VintageCashCowTechTest.ProductPricingApi.Tests.Integration
             var response = await _client.PutAsJsonAsync(CreateUpdatePriceResourceUri(productId), updatePriceRequest);
 
             // Assert
-            response.EnsureSuccessStatusCode();
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, "StatusCode");
+
             var content = await response.Content.ReadAsStringAsync();
             var updatePriceResponse = JsonConvert.DeserializeObject<UpdatePriceResponse>(content);
-
             Assert.IsNotNull(updatePriceResponse);
             Assert.AreEqual(11, updatePriceResponse.Id);
             Assert.AreEqual("Product A11", updatePriceResponse.Name);
             Assert.AreEqual(100, updatePriceResponse.NewPrice);
             Assert.IsTrue(updatePriceResponse.LastUpdated >= DateTime.UtcNow.AddSeconds(-5), "LastUpdated");
             Assert.IsTrue(updatePriceResponse.LastUpdated <= DateTime.UtcNow, "LastUpdated");
+
+            AssertResponseContainsApiRequestId(response);
         }
 
         [TestMethod]
-        public async Task UpdatePrice_WhenValidRequestAndMinimumPrice_ReturnsUpdatedPrice()
-        {
-            // Arrange
-            var productId = 11;
-            var updatePriceRequest = new UpdatePriceRequest { NewPrice = 0 };
-
-            // Act
-            var response = await _client.PutAsJsonAsync(CreateUpdatePriceResourceUri(productId), updatePriceRequest);
-
-            // Assert
-            response.EnsureSuccessStatusCode();
-            var content = await response.Content.ReadAsStringAsync();
-            var updatePriceResponse = JsonConvert.DeserializeObject<UpdatePriceResponse>(content);
-
-            Assert.AreEqual(0, updatePriceResponse.NewPrice);
-        }
-
-        [TestMethod]
-        public async Task UpdatePrice_WhenNegativePrice_ReturnsBadRequest()
+        public async Task UpdatePrice_WhenRequestInvalid_ReturnsBadRequest()
         {
             // Arrange
             var productId = 11;
@@ -238,9 +273,23 @@ namespace VintageCashCowTechTest.ProductPricingApi.Tests.Integration
             var response = await _client.PutAsJsonAsync(CreateUpdatePriceResourceUri(productId), updatePriceRequest);
 
             // Assert
-            Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
-            var message = await GetContentString(response);
-            Assert.AreEqual("New price cannot be negative.", message);
+            await AssertResponseIsBadRequest(response, "New price cannot be negative.");
+            AssertResponseContainsApiRequestId(response);
+        }
+
+        [TestMethod]
+        public async Task UpdatePrice_WhenExceptionThrown_ReturnsInternalServerError()
+        {
+            // Arrange
+            var productId = TestProductRepository.ProductIdToThrowException;
+            var updatePriceRequest = new UpdatePriceRequest { NewPrice = 100.0m };
+
+            // Act
+            var response = await _client.PutAsJsonAsync(CreateUpdatePriceResourceUri(productId), updatePriceRequest);
+
+            // Assert
+            await AssertResponseIsInternalServerError(response);
+            AssertResponseContainsApiRequestId(response);
         }
 
         [TestCleanup]

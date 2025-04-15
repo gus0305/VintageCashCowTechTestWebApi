@@ -19,14 +19,11 @@ namespace VintageCashCowTechTest.ProductPricingApi.Mappers
         {
             var modelPriceHistory = new List<Models.PriceHistory>();
 
-            if (priceHistory != null)
+            foreach (var priceHistoryItem in priceHistory)
             {
-                foreach (var priceHistoryItem in priceHistory)
+                if (priceHistoryItem != null)
                 {
-                    if (priceHistoryItem != null)
-                    {
-                        modelPriceHistory.Add(new Models.PriceHistory { Price = priceHistoryItem.Price, Date = priceHistoryItem.Date });
-                    }
+                    modelPriceHistory.Add(new Models.PriceHistory { Price = priceHistoryItem.Price, Date = priceHistoryItem.Date });
                 }
             }
 

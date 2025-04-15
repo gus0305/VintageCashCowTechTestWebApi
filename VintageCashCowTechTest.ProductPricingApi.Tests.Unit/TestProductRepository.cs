@@ -5,6 +5,8 @@ namespace VintageCashCowTechTest.ProductPricingApi.Tests.Integration
 {
     public class TestProductRepository : IProductRepository
     {
+        public const int ProductIdToThrowException = int.MaxValue;
+       
         private List<Product> _products = new List<Product>
         {
             new Product
@@ -37,7 +39,17 @@ namespace VintageCashCowTechTest.ProductPricingApi.Tests.Integration
 
         public Product? GetById(int id)
         {
+            if (id == ProductIdToThrowException)
+            {
+                throw new Exception("TestProductRepository simulated exception");
+            }
+
             return _products.FirstOrDefault(x => x.Id == id);
+        }
+
+        public void Save(Product product)
+        {
+            // Do nothing
         }
     }
 }

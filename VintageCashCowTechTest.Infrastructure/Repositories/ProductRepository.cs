@@ -39,5 +39,10 @@ namespace VintageCashCowTechTest.Infrastructure.Repositories
         {
             return _products.FirstOrDefault(p => p.Id == id);
         }
+
+        public void Save(Product product)
+        {
+            // Simulate database update
+        }
     }
 }

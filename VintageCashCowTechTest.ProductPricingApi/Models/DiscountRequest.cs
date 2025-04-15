@@ -2,6 +2,6 @@
 {
     public class DiscountRequest
     {
-        public decimal DiscountPercentage { get; set; }
+        public int DiscountPercentage { get; set; }
     }
 }
