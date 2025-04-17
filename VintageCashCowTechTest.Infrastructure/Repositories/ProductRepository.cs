@@ -27,6 +27,38 @@ namespace VintageCashCowTechTest.Infrastructure.Repositories
                 Price = 200.0m,
                 LastUpdated = DateTime.Parse("2024-09-25T10:12:34"),
                 PriceHistory = new List<PriceHistory>()
+            },
+            new Product
+            {
+                Id = 3,
+                Name = "Product C",
+                Price = 333.0m,
+                LastUpdated = DateTime.Parse("2024-03-25T10:12:34"),
+                PriceHistory = new List<PriceHistory>()
+            },            
+            new Product
+            {
+                Id = 4,
+                Name = "Product D",
+                Price = 678.12m,
+                LastUpdated = DateTime.Parse("2024-09-25T10:12:34"),
+                PriceHistory = new List<PriceHistory>()
+            },
+            new Product
+            {
+                Id = 5,
+                Name = "Product E",
+                Price = 23.89m,
+                LastUpdated = DateTime.Parse("2024-01-25T10:12:34"),
+                PriceHistory = new List<PriceHistory>()
+            },
+            new Product
+            {
+                Id = 6,
+                Name = "Product F",
+                Price = 12.89m,
+                LastUpdated = DateTime.Parse("2024-01-25T10:12:34"),
+                PriceHistory = new List<PriceHistory>()
             }
         };
 

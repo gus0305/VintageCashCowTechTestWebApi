@@ -10,6 +10,8 @@ namespace VintageCashCowTechTest.ProductPricingApi
 {
     public class Program
     {
+        private const string RequestIdHeaderName = "x-vcc-productapi-requestid";
+
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
@@ -20,7 +22,6 @@ namespace VintageCashCowTechTest.ProductPricingApi
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-
             builder.Services.AddApplicationInsightsTelemetry();
 
             builder.Services.AddInfrastructure();
@@ -42,6 +43,14 @@ namespace VintageCashCowTechTest.ProductPricingApi
                 app.UseSwaggerUI();
             }
 
+            app.UseCors(x => x
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .WithExposedHeaders([RequestIdHeaderName])
+                .SetIsOriginAllowed(origin => true) // allow any origin
+                .AllowCredentials()); // allow credentials
+
+
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
@@ -59,7 +68,7 @@ namespace VintageCashCowTechTest.ProductPricingApi
                 httpContext.Response.OnStarting(() =>
                 {
                     var requestId = Guid.NewGuid().ToString();
-                    httpContext.Response.Headers.TryAdd("x-vcc-productapi-requestid", requestId);
+                    httpContext.Response.Headers.TryAdd(RequestIdHeaderName, requestId);
 
                     const string vintageCashCowPrefix = "VintageCashCash";
                     var requestTelemetry = httpContext.Features.Get<RequestTelemetry>();

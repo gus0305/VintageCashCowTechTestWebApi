@@ -145,7 +145,7 @@ namespace VintageCashCowTechTest.ProductProcingApi.Tests.Unit.Services
             Assert.IsNotNull(product.PriceHistory, "product.PriceHistory");
             Assert.AreEqual(2, product.PriceHistory.Count, "product.PriceHistory.Count");
             var productPriceHistory = product.PriceHistory[1];
-            Assert.AreEqual(discountedPrice, productPriceHistory.Price, "productPriceHistory.Price");
+            Assert.AreEqual(productPrice, productPriceHistory.Price, "productPriceHistory.Price");
             Assert.IsTrue(DateIsApproxEqualToUtcNow(productPriceHistory.Date), "productPriceHistory.Date");
 
             _productRepositoryMock.Verify(x => x.Save(product), Times.Exactly(1));
@@ -198,6 +198,7 @@ namespace VintageCashCowTechTest.ProductProcingApi.Tests.Unit.Services
 
             const string productName = "Name 123";
             var product = CreateProduct(productId);
+            product.Price = 20;
             product.Name = productName;
             _productRepositoryMock.Setup(x => x.GetById(productId)).Returns(product);
 
@@ -213,7 +214,7 @@ namespace VintageCashCowTechTest.ProductProcingApi.Tests.Unit.Services
             Assert.IsNotNull(product.PriceHistory, "product.PriceHistory");
             Assert.AreEqual(2, product.PriceHistory.Count, "product.PriceHistory.Count");
             var productPriceHistory = product.PriceHistory[1];
-            Assert.AreEqual(newPrice, productPriceHistory.Price, "productPriceHistory.Price");
+            Assert.AreEqual(20, productPriceHistory.Price, "productPriceHistory.Price");
             Assert.IsTrue(DateIsApproxEqualToUtcNow(productPriceHistory.Date), "productPriceHistory.Date");
 
             _productRepositoryMock.Verify(x => x.Save(product), Times.Exactly(1));

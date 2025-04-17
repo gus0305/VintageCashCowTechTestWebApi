@@ -71,7 +71,7 @@ namespace VintageCashCowTechTest.ProductPricingApi.Services
             // Update product
             product.Price = discountedPrice;
             product.LastUpdated = DateTime.UtcNow;
-            product.PriceHistory.Add(new Domain.Entities.PriceHistory { Price = discountedPrice, Date = DateTime.UtcNow });
+            product.PriceHistory.Add(new Domain.Entities.PriceHistory { Price = originalPrice, Date = DateTime.UtcNow });
 
             // Persist product
             _productRepository.Save(product);   
@@ -96,9 +96,10 @@ namespace VintageCashCowTechTest.ProductPricingApi.Services
             _updatePriceRequestValidator.Validate(request);
 
             // TODO Is the price update always performed even if the current price is the same as the new price?
+            var originalPrice = product.Price;
             product.Price = request.NewPrice;
             product.LastUpdated = DateTime.UtcNow;
-            product.PriceHistory.Add(new Domain.Entities.PriceHistory { Price = request.NewPrice, Date = DateTime.UtcNow });
+            product.PriceHistory.Add(new Domain.Entities.PriceHistory { Price = originalPrice, Date = DateTime.UtcNow });
 
             // Persist product
             _productRepository.Save(product);
