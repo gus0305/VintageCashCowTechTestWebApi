@@ -18,6 +18,8 @@ namespace VintageCashCowTechTest.ProductPricingApi.Controllers
         }
 
         [HttpGet]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<ProductResponse>))]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<List<ProductResponse>>> GetProducts()
         {
             var products = await _productService.GetProductsAsync();
@@ -25,6 +27,10 @@ namespace VintageCashCowTechTest.ProductPricingApi.Controllers
         }
 
         [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProductPriceHistoryResponse))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ProductPriceHistoryResponse>> GetProduct(int id)
         {
             try
@@ -39,6 +45,10 @@ namespace VintageCashCowTechTest.ProductPricingApi.Controllers
         }
 
         [HttpPost("{id}/apply-discount")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DiscountResponse))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<DiscountResponse>> ApplyDiscount(int id, [FromBody] DiscountRequest request)
         {
             try
@@ -53,6 +63,10 @@ namespace VintageCashCowTechTest.ProductPricingApi.Controllers
         }
 
         [HttpPut("{id}/update-price")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UpdatePriceResponse))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<UpdatePriceResponse>> UpdatePrice(int id, [FromBody] UpdatePriceRequest request)
         {
             try
