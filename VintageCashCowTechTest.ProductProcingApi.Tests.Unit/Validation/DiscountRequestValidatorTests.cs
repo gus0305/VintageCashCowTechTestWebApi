@@ -2,7 +2,7 @@
 using VintageCashCowTechTest.ProductPricingApi.Models;
 using VintageCashCowTechTest.ProductPricingApi.Validation;
 
-namespace VintageCashCowTechTest.ProductProcingApi.Tests.Unit.Validation
+namespace VintageCashCowTechTest.ProductPricingApi.Tests.Unit.Validation
 {
     [TestClass]
     public sealed class DiscountRequestValidatorTests

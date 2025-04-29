@@ -1,6 +1,6 @@
 ﻿using VintageCashCowTechTest.ProductPricingApi.Calculators;
 
-namespace VintageCashCowTechTest.ProductProcingApi.Tests.Unit.Calculators
+namespace VintageCashCowTechTest.ProductPricingApi.Tests.Unit.Calculators
 {
     [TestClass]
     public sealed class DiscountedPriceCalculatorTests

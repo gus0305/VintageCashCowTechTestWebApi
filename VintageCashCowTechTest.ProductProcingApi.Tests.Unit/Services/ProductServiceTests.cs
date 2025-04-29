@@ -8,7 +8,7 @@ using VintageCashCowTechTest.ProductPricingApi.Models;
 using VintageCashCowTechTest.ProductPricingApi.Services;
 using VintageCashCowTechTest.ProductPricingApi.Validation;
 
-namespace VintageCashCowTechTest.ProductProcingApi.Tests.Unit.Services
+namespace VintageCashCowTechTest.ProductPricingApi.Tests.Unit.Services
 {
     [TestClass]
     public sealed class ProductServiceTests

@@ -1,7 +1,7 @@
 ﻿using VintageCashCowTechTest.Domain.Entities;
 using VintageCashCowTechTest.ProductPricingApi.Mappers;
 
-namespace VintageCashCowTechTest.ProductProcingApi.Tests.Unit.Mappers
+namespace VintageCashCowTechTest.ProductPricingApi.Tests.Unit.Mappers
 {
     [TestClass]
     public sealed class ProductPriceHistoryResponseMapperTests

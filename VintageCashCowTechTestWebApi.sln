@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VintageCashCowTechTest.Infr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VintageCashCowTechTest.ProductPricingApi.Tests.Integration", "VintageCashCowTechTest.ProductPricingApi.Tests.Unit\VintageCashCowTechTest.ProductPricingApi.Tests.Integration.csproj", "{34CC5676-8F09-442D-B246-B71472015330}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VintageCashCowTechTest.ProductProcingApi.Tests.Unit", "VintageCashCowTechTest.ProductProcingApi.Tests.Unit\VintageCashCowTechTest.ProductProcingApi.Tests.Unit.csproj", "{59E13375-38F4-4DBF-A1BF-43CA56B79E8E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VintageCashCowTechTest.ProductPricingApi.Tests.Unit", "VintageCashCowTechTest.ProductProcingApi.Tests.Unit\VintageCashCowTechTest.ProductPricingApi.Tests.Unit.csproj", "{59E13375-38F4-4DBF-A1BF-43CA56B79E8E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
