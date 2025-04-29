@@ -29,7 +29,6 @@ namespace VintageCashCowTechTest.ProductPricingApi.Controllers
         [HttpGet("{id}")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ProductPriceHistoryResponse))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<ProductPriceHistoryResponse>> GetProduct(int id)
         {
@@ -46,7 +45,7 @@ namespace VintageCashCowTechTest.ProductPricingApi.Controllers
 
         [HttpPost("{id}/apply-discount")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DiscountResponse))]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<DiscountResponse>> ApplyDiscount(int id, [FromBody] DiscountRequest request)
@@ -64,7 +63,7 @@ namespace VintageCashCowTechTest.ProductPricingApi.Controllers
 
         [HttpPut("{id}/update-price")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(UpdatePriceResponse))]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<UpdatePriceResponse>> UpdatePrice(int id, [FromBody] UpdatePriceRequest request)
